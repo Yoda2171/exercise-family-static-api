@@ -9,6 +9,7 @@ from datastructures import FamilyStructure
 #from models import Person
 
 app = Flask(__name__)
+app.config["ENV"] = "development"
 app.url_map.strict_slashes = False
 CORS(app)
 
@@ -32,11 +33,43 @@ def handle_hello():
     members = jackson_family.get_all_members()
     response_body = {
         "hello": "world",
-        "family": members
+        "family": members,
+        
     }
 
 
     return jsonify(response_body), 200
+
+@app.route('/members/<int:member_id>', methods=['GET'])
+def one_member(member_id):
+    
+    member = jackson_family.get_member(member_id)
+    return jsonify(member), 200
+
+
+@app.route('/members', methods=['POST'])
+def añadir_member():
+
+    age = request.json.get("age")
+    first_name = request.json.get("first_name")
+    lucky_numbers = request.json.get("lucky_numbers")
+    member={
+            "age": age,
+            "first_name": first_name,
+            "lucky_numbers":lucky_numbers,
+        }
+
+    jackson_family.add_member(member)
+
+    return jsonify({"result": "ok"}), 201  
+
+@app.route('/members/<int:member_id>', methods=['DELETE'])
+def eliminar_member(member_id):
+
+    member = jackson_family.get_member(member_id)
+    jackson_family.delete_member(member_id)
+    return jsonify({"success": "Deleted Complete"}),200
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
